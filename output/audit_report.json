@@ -1,0 +1,74 @@
+[
+  {
+    "scenario": "1_STANDARD_FACE",
+    "degradation": "none",
+    "severity": 0.0,
+    "latency_ms": 113.7,
+    "retries": 1,
+    "enhancements": [
+      "HISTOGRAM_EQUALIZATION"
+    ],
+    "issues_diagnosed": [],
+    "quality_score": 98.3,
+    "quality_status": "EXCELLENT",
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "iou": 0.961,
+    "bbox": [
+      118,
+      78,
+      215,
+      295
+    ],
+    "detection_count": 1
+  },
+  {
+    "scenario": "2_UNDER_EXPOSED_DARK_FACE",
+    "degradation": "under_exposed",
+    "severity": 0.85,
+    "latency_ms": 170.1,
+    "retries": 2,
+    "enhancements": [
+      "UNSHARP_MASK_SHARPENING",
+      "CLAHE_BRIGHTNESS_BOOST"
+    ],
+    "issues_diagnosed": [
+      "LOW_CONTRAST"
+    ],
+    "quality_score": 92.2,
+    "quality_status": "LOW_CONTRAST",
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "iou": 0.962,
+    "bbox": [
+      113,
+      73,
+      225,
+      305
+    ],
+    "detection_count": 1
+  },
+  {
+    "scenario": "3_BLURRY_FACE",
+    "degradation": "blur",
+    "severity": 0.75,
+    "latency_ms": 34.3,
+    "retries": 2,
+    "enhancements": [
+      "UNSHARP_MASK_SHARPENING",
+      "UNSHARP_MASK_SHARPENING"
+    ],
+    "issues_diagnosed": [
+      "LOW_CONTRAST"
+    ],
+    "quality_score": 76.3,
+    "quality_status": "LOW_CONTRAST",
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "iou": 0.716,
+    "bbox": [
+      82,
+      70,
+      292,
+      292
+    ],
+    "detection_count": 1
+  }
+]

@@ -1,0 +1,410 @@
+[
+  {
+    "frame_label": "F01_Single_Clear",
+    "detections": [
+      {
+        "bbox": [
+          119,
+          89,
+          163,
+          223
+        ],
+        "confidence": 0.84,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 75.4,
+      "blur_score": 1442.13,
+      "luminance": 210.33,
+      "contrast": 26.94,
+      "issues": [],
+      "face_roi_box": [
+        119,
+        89,
+        163,
+        223
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_FIRST_TRY",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.968,
+      "final_quality_score": 75.4,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 0,
+      "applied_enhancements": [],
+      "degradation_handled": "none"
+    },
+    "quality_score": 75.4,
+    "verdict": "PASSED_FIRST_TRY",
+    "detection_count": 1,
+    "retries": 0,
+    "enhancements": [],
+    "latency_ms": 91.4,
+    "degradation": "none"
+  },
+  {
+    "frame_label": "F02_Offset_Wink",
+    "detections": [
+      {
+        "bbox": [
+          80,
+          83,
+          141,
+          195
+        ],
+        "confidence": 0.79,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 94.2,
+      "blur_score": 6043.82,
+      "luminance": 123.39,
+      "contrast": 67.66,
+      "issues": [],
+      "face_roi_box": [
+        80,
+        83,
+        141,
+        195
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_AFTER_SELF_HEALING",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.964,
+      "final_quality_score": 94.2,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 1,
+      "applied_enhancements": [
+        "HISTOGRAM_EQUALIZATION"
+      ],
+      "degradation_handled": "none"
+    },
+    "quality_score": 94.2,
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "detection_count": 1,
+    "retries": 1,
+    "enhancements": [
+      "HISTOGRAM_EQUALIZATION"
+    ],
+    "latency_ms": 14.4,
+    "degradation": "none"
+  },
+  {
+    "frame_label": "F03_Glasses",
+    "detections": [
+      {
+        "bbox": [
+          111,
+          78,
+          179,
+          245
+        ],
+        "confidence": 0.88,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 75.9,
+      "blur_score": 2471.57,
+      "luminance": 208.9,
+      "contrast": 33.49,
+      "issues": [],
+      "face_roi_box": [
+        111,
+        78,
+        179,
+        245
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_FIRST_TRY",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.971,
+      "final_quality_score": 75.9,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 0,
+      "applied_enhancements": [],
+      "degradation_handled": "none"
+    },
+    "quality_score": 75.9,
+    "verdict": "PASSED_FIRST_TRY",
+    "detection_count": 1,
+    "retries": 0,
+    "enhancements": [],
+    "latency_ms": 7.5,
+    "degradation": "none"
+  },
+  {
+    "frame_label": "F04_Dark_Underexposed",
+    "detections": [
+      {
+        "bbox": [
+          119,
+          89,
+          163,
+          223
+        ],
+        "confidence": 0.84,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "LOW_CONTRAST",
+      "quality_score": 88.2,
+      "blur_score": 5171.96,
+      "luminance": 106.21,
+      "contrast": 20.8,
+      "issues": [
+        "LOW_CONTRAST"
+      ],
+      "face_roi_box": [
+        119,
+        89,
+        163,
+        223
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_AFTER_SELF_HEALING",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.968,
+      "final_quality_score": 88.2,
+      "final_status": "LOW_CONTRAST",
+      "self_healing_iterations": 2,
+      "applied_enhancements": [
+        "UNSHARP_MASK_SHARPENING",
+        "CLAHE_BRIGHTNESS_BOOST"
+      ],
+      "degradation_handled": "under_exposed"
+    },
+    "quality_score": 88.2,
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "detection_count": 1,
+    "retries": 2,
+    "enhancements": [
+      "UNSHARP_MASK_SHARPENING",
+      "CLAHE_BRIGHTNESS_BOOST"
+    ],
+    "latency_ms": 145.2,
+    "degradation": "under_exposed"
+  },
+  {
+    "frame_label": "F05_Blurry",
+    "detections": [
+      {
+        "bbox": [
+          115,
+          86,
+          171,
+          229
+        ],
+        "confidence": 0.82,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 76.9,
+      "blur_score": 7840.1,
+      "luminance": 206.0,
+      "contrast": 32.63,
+      "issues": [],
+      "face_roi_box": [
+        115,
+        86,
+        171,
+        229
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_AFTER_SELF_HEALING",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.899,
+      "final_quality_score": 76.9,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 2,
+      "applied_enhancements": [
+        "UNSHARP_MASK_SHARPENING",
+        "UNSHARP_MASK_SHARPENING"
+      ],
+      "degradation_handled": "blur"
+    },
+    "quality_score": 76.9,
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "detection_count": 1,
+    "retries": 2,
+    "enhancements": [
+      "UNSHARP_MASK_SHARPENING",
+      "UNSHARP_MASK_SHARPENING"
+    ],
+    "latency_ms": 23.1,
+    "degradation": "blur"
+  },
+  {
+    "frame_label": "F06_Two_Faces",
+    "detections": [
+      {
+        "bbox": [
+          232,
+          110,
+          117,
+          161
+        ],
+        "confidence": 0.75,
+        "method": "color_geometry_adaptive"
+      },
+      {
+        "bbox": [
+          66,
+          125,
+          109,
+          151
+        ],
+        "confidence": 0.73,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 88.5,
+      "blur_score": 7285.62,
+      "luminance": 107.09,
+      "contrast": 73.43,
+      "issues": [],
+      "face_roi_box": [
+        232,
+        110,
+        117,
+        161
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_AFTER_SELF_HEALING",
+      "face_detected": true,
+      "detection_count": 2,
+      "iou_vs_ground_truth": 0.0,
+      "final_quality_score": 88.5,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 1,
+      "applied_enhancements": [
+        "HISTOGRAM_EQUALIZATION"
+      ],
+      "degradation_handled": "none"
+    },
+    "quality_score": 88.5,
+    "verdict": "PASSED_AFTER_SELF_HEALING",
+    "detection_count": 2,
+    "retries": 1,
+    "enhancements": [
+      "HISTOGRAM_EQUALIZATION"
+    ],
+    "latency_ms": 20.5,
+    "degradation": "none"
+  },
+  {
+    "frame_label": "F07_Noisy",
+    "detections": [
+      {
+        "bbox": [
+          115,
+          88,
+          169,
+          227
+        ],
+        "confidence": 0.81,
+        "method": "color_geometry_adaptive"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 76.6,
+      "blur_score": 7831.07,
+      "luminance": 206.9,
+      "contrast": 30.07,
+      "issues": [],
+      "face_roi_box": [
+        115,
+        88,
+        169,
+        227
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_FIRST_TRY",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.918,
+      "final_quality_score": 76.6,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 0,
+      "applied_enhancements": [],
+      "degradation_handled": "noise"
+    },
+    "quality_score": 76.6,
+    "verdict": "PASSED_FIRST_TRY",
+    "detection_count": 1,
+    "retries": 0,
+    "enhancements": [],
+    "latency_ms": 45.1,
+    "degradation": "noise"
+  },
+  {
+    "frame_label": "F08_Small_Distant",
+    "detections": [
+      {
+        "bbox": [
+          141,
+          145,
+          112,
+          112
+        ],
+        "confidence": 0.83,
+        "method": "haar_cascade"
+      }
+    ],
+    "quality_report": {
+      "status": "EXCELLENT",
+      "quality_score": 77.6,
+      "blur_score": 4584.39,
+      "luminance": 203.99,
+      "contrast": 39.06,
+      "issues": [],
+      "face_roi_box": [
+        141,
+        145,
+        112,
+        112
+      ]
+    },
+    "audit_report": {
+      "verdict": "PASSED_FIRST_TRY",
+      "face_detected": true,
+      "detection_count": 1,
+      "iou_vs_ground_truth": 0.744,
+      "final_quality_score": 77.6,
+      "final_status": "EXCELLENT",
+      "self_healing_iterations": 0,
+      "applied_enhancements": [],
+      "degradation_handled": "none"
+    },
+    "quality_score": 77.6,
+    "verdict": "PASSED_FIRST_TRY",
+    "detection_count": 1,
+    "retries": 0,
+    "enhancements": [],
+    "latency_ms": 6.6,
+    "degradation": "none"
+  }
+]
