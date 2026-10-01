@@ -39,7 +39,11 @@ multi_agent_face_detection/
 ├── server.py                      <-- Local Web Server & Drag-and-Drop Uploader
 ├── run_multiframe.py              <-- Batch Multi-Frame Pipeline & Report Exporter
 ├── run_headless.py                <-- Single-Frame Headless CLI Runner
-├── generate_pptx.py               <-- Automated PowerPoint Deck Generator
+├── generate_corporate_deck.py     <-- 16-Slide Corporate PowerPoint Deck Generator
+├── Multi_Agent_Face_Detection_Corporate_Presentation.pptx <-- Executive Presentation Deck
+├── Multi_Agent_Face_Detection_Corporate_Presentation.html <-- Interactive Browser Slides
+│
+├── FaceDetection_Test_images/     <-- Real-world biometric test photo suite
 │
 ├── models/
 │   └── face_detection_yunet.onnx  <-- OpenCV YuNet Deep Neural Network weights
