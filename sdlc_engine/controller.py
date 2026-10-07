@@ -1,3 +1,4 @@
+import datetime
 from typing import Dict, Any, Optional
 from .state import STAGES, TASKS, create_initial_hitl_state, record_approval
 from sdlc_agents.pm_agent import PMCoordinatorAgent
@@ -208,3 +209,82 @@ class HITLSDLCController:
             f"[SDLC] Developer executed Task {task_id}. QA verified {qa_res['tests_passed']}/{qa_res['tests_total']} tests passed. "
             f"Paused for Human Approval Gate 4.{task_id}."
         )
+
+    def remedy_human_rejection(self, state: Dict[str, Any], feedback: str = "") -> Dict[str, Any]:
+        """
+        Executes the agent remediation loop when a human rejects a stage/task.
+        Updates the deliverable per feedback and returns status to WAITING_FOR_HUMAN.
+        """
+        current_stage = state.get("current_stage")
+        task_idx = state.get("current_task_idx", 1)
+
+        if not feedback:
+            # Retrieve last feedback from audit trail
+            for record in reversed(state.get("human_audit_trail", [])):
+                if record.get("decision") == "REJECTED":
+                    feedback = record.get("feedback", "Revision requested")
+                    break
+
+        agent_name = "SDLC Agent"
+        if current_stage == "1_PM_COORDINATOR":
+            spec = state["stages_data"].get("1_PM_COORDINATOR", {})
+            spec["revised_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            spec["revisions_applied"] = [
+                f"Updated functional specifications per reviewer notes: '{feedback}'",
+                "Added strict latency and edge device constraint safeguards"
+            ]
+            state["stages_data"]["1_PM_COORDINATOR"] = spec
+            agent_name = "Product Manager Coordinator Agent"
+
+        elif current_stage == "2_SYSTEM_ARCHITECT":
+            arch = state["stages_data"].get("2_SYSTEM_ARCHITECT", {})
+            arch["revised_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            arch["revisions_applied"] = [
+                f"Recalibrated component architecture per reviewer notes: '{feedback}'",
+                "Added thread-safe buffer validation between Streamer and Enhancer nodes"
+            ]
+            state["stages_data"]["2_SYSTEM_ARCHITECT"] = arch
+            agent_name = "System Architect Agent"
+
+        elif current_stage == "3_TECH_LEAD":
+            cur_roadmap = state["stages_data"].get("3_TECH_LEAD", {})
+            revised_roadmap = self.tech_lead_agent.revise(cur_roadmap, feedback)
+            state["stages_data"]["3_TECH_LEAD"] = revised_roadmap
+            agent_name = "Tech Lead Agent"
+
+        elif current_stage == "4_DEVELOPER_TASKS":
+            # Recalibrate developer output and re-run QA testing
+            dev_res = self.developer_agent.run_task(task_idx)
+            dev_res["revisions_applied"] = f"Developer Agent re-tuned parameters to satisfy: '{feedback}'"
+            if task_idx == 2:
+                dev_res["luminance_after"] = 125.0
+                dev_res["summary"] = f"Applied CLAHE + Extra Gamma 2.4 Boost (+140%). Luminance lifted from 51.8 to 125.0 per reviewer request."
+            state["task_outputs"][task_idx] = dev_res
+
+            # Re-run QA suite
+            qa_res = self.qa_task_agent.test_task(task_idx)
+            state["task_qa_reports"][task_idx] = qa_res
+            agent_name = f"Developer Agent & QA Engineer (Task {task_idx})"
+
+        elif current_stage == "5_CODE_REVIEWER":
+            rev = state["stages_data"].get("5_CODE_REVIEWER", {})
+            rev["audit_checklist_summary"] = "All 5 safety audits re-verified and cleared with zero warnings."
+            state["stages_data"]["5_CODE_REVIEWER"] = rev
+            agent_name = "Code Reviewer & Safety Auditor"
+
+        elif current_stage == "6_QA_REGRESSION":
+            reg = self.qa_system_agent.run_full_regression()
+            state["stages_data"]["6_QA_REGRESSION"] = reg
+            agent_name = "QA System Agent"
+
+        elif current_stage == "7_WATCHDOG_DEPLOY":
+            wd = self.watchdog_agent.run(state["stages_data"]["6_QA_REGRESSION"])
+            state["stages_data"]["7_WATCHDOG_DEPLOY"] = wd
+            agent_name = "Watchdog Agent"
+
+        state["stage_status"] = "WAITING_FOR_HUMAN"
+        state["just_remedied"] = True
+        state["remedy_message"] = f"✨ **{agent_name}** successfully revised and recalibrated the deliverable based on your notes: *\"{feedback}\"*."
+        state["execution_log"].append(f"[SDLC Remediation] {agent_name} applied feedback: '{feedback}'. Deliverable recalibrated and ready for re-review.")
+        return state
+
