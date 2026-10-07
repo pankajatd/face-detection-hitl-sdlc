@@ -280,62 +280,74 @@ def render_human_approval_gate(controller, state, stage_or_task_name, prompt_tex
     if is_rejected:
         st.markdown(f"""
         <div style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #ef4444; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
-            <div style="color: #f87171; font-weight: 700; font-size: 13px;">🔴 STATUS: REJECTED (MODIFICATIONS REQUESTED)</div>
-            <div style="color: #fca5a5; font-size: 12px; margin-top: 4px;"><b>Your Reviewer Notes:</b> "{last_fb}"</div>
-            <div style="color: #fecaca; font-size: 12px; margin-top: 6px; line-height: 1.4;">
-                <b>🔒 Approval Locked:</b> You cannot approve this stage until the agent applies your feedback and revises the deliverable.
+            <div style="color: #f87171; font-weight: 700; font-size: 13px;">🔴 STAGE REJECTED — REVISION REQUIRED</div>
+            <div style="color: #fca5a5; font-size: 12px; margin-top: 4px;"><b>Recorded Issue:</b> "{last_fb}"</div>
+            <div style="color: #fef2f2; font-size: 12px; margin-top: 6px; line-height: 1.4;">
+                Provide your revision notes below, then click <b>Apply Feedback & Revise</b>. The agent will fix the deliverable and unlock the <b>APPROVE</b> button.
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Prominent Agent Revision Button
-        btn_label = f"🛠️ Request {agent_name} to Revise Deliverable with Your Notes"
-        if st.button(btn_label, use_container_width=True, key=f"btn_remedy_{key_prefix}"):
+        user_instructions = st.text_input(
+            "📝 Revision Instructions for the Agent:",
+            value=last_fb if last_fb != "Modifications requested" else "",
+            placeholder="e.g. Improve blurred image handling and boost brightness",
+            key=f"rev_input_{key_prefix}"
+        )
+
+        if st.button("🛠️ Apply Feedback & Revise Deliverable", use_container_width=True, key=f"btn_remedy_{key_prefix}"):
+            eff_fb = user_instructions.strip() if user_instructions.strip() else last_fb
             if cur_stg == "4_DEVELOPER_TASKS" and t_idx == 2:
                 st.session_state["extra_brightness_applied"] = True
-            st.session_state.state = controller.remedy_human_rejection(state, last_fb)
+            st.session_state.state = controller.remedy_human_rejection(state, eff_fb)
             st.rerun()
 
-    elif state.get("just_remedied"):
+        c_app, c_rej = st.columns(2, gap="small")
+        with c_app:
+            st.button("🔒 Locked", disabled=True, use_container_width=True, key=f"btn_app_{key_prefix}_dis")
+        with c_rej:
+            st.button("🔴 Rejected", disabled=True, use_container_width=True, key=f"btn_rej_{key_prefix}_dis")
+
+        st.markdown("<div style='color: #9ca3af; font-size: 11px; margin-top: 4px; text-align: center;'>👆 Click <b>Apply Feedback & Revise</b> above to unlock approval.</div>", unsafe_allow_html=True)
+
+    else:
+        if state.get("just_remedied"):
+            st.markdown(f"""
+            <div style="background: rgba(34, 197, 94, 0.18); border: 2px solid #22c55e; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+                <div style="color: #4ade80; font-weight: bold; font-size: 13px;">✨ REVISION COMPLETED BY AGENT</div>
+                <div style="color: #f3f4f6; font-size: 12px; margin-top: 4px; line-height: 1.4;">
+                    {state.get('remedy_message', 'The agent has recalibrated the deliverable to address your feedback.')}
+                </div>
+                <div style="color: #a7f3d0; font-size: 12px; margin-top: 6px; font-weight: bold;">
+                    🔓 Approval is now UNLOCKED! Inspect the revised details on the left, then click APPROVE below.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Prompt Card with high-contrast Amber styling
         st.markdown(f"""
-        <div style="background: rgba(34, 197, 94, 0.15); border: 1.5px solid #22c55e; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
-            <div style="color: #4ade80; font-weight: bold; font-size: 13px;">✨ AGENT REVISION COMPLETED</div>
-            <div style="color: #f3f4f6; font-size: 12px; margin-top: 4px; line-height: 1.4;">
-                {state.get('remedy_message', 'The agent has recalibrated the deliverable to address your feedback.')}
-            </div>
-            <div style="color: #a7f3d0; font-size: 12px; margin-top: 6px; font-weight: bold;">
-                🔓 Approval is now unlocked! Please inspect the revised details and click APPROVE below.
-            </div>
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+            <div style="color: #fbbf24; font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ HUMAN REVIEW REQUIRED</div>
+            <div style="color: #fef3c7; font-size: 13px; line-height: 1.4;">{prompt_text}</div>
         </div>
         """, unsafe_allow_html=True)
-
-    # Prompt Card with high-contrast Amber styling (No blue/dark contrast issues)
-    st.markdown(f"""
-    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
-        <div style="color: #fbbf24; font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ HUMAN REVIEW REQUIRED</div>
-        <div style="color: #fef3c7; font-size: 13px; line-height: 1.4;">{prompt_text}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{key_prefix}")
-    
-    c_app, c_rej = st.columns(2, gap="small")
-    with c_app:
-        if is_rejected:
-            st.button("🔒 APPROVE (Locked until revised)", disabled=True, use_container_width=True, key=f"btn_app_{key_prefix}_dis")
-        else:
-            if st.button("🟡 APPROVE", use_container_width=True, key=f"btn_app_{key_prefix}"):
+        
+        feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{key_prefix}")
+        
+        c_app, c_rej = st.columns(2, gap="small")
+        with c_app:
+            app_btn_label = "🟢 APPROVE & ADVANCE" if state.get("just_remedied") else "🟡 APPROVE"
+            if st.button(app_btn_label, use_container_width=True, key=f"btn_app_{key_prefix}"):
                 state["just_remedied"] = False
                 state["remedy_message"] = ""
                 st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=feedback or f"Approved {stage_or_task_name}")
                 st.rerun()
-    with c_rej:
-        rej_label = "🔴 REJECTED" if is_rejected else "🟡 REJECT"
-        if st.button(rej_label, use_container_width=True, key=f"btn_rej_{key_prefix}", disabled=is_rejected):
-            state["just_remedied"] = False
-            state["remedy_message"] = ""
-            st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
-            st.rerun()
+        with c_rej:
+            if st.button("🟡 REJECT", use_container_width=True, key=f"btn_rej_{key_prefix}"):
+                state["just_remedied"] = False
+                state["remedy_message"] = ""
+                st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
+                st.rerun()
 
 # Header
 st.markdown("""
