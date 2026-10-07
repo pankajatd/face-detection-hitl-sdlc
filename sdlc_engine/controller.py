@@ -70,7 +70,7 @@ class HITLSDLCController:
             return {
                 "stage": "4_DEVELOPER_TASKS",
                 "task_id": task_idx,
-                "title": f"Stage 4: Developer + QA Micro-Loop ({task_def['name']})",
+                "title": f"Stage 4: Development & Quality Testing (Task {task_idx} of 5: {task_def['name']})",
                 "task_def": task_def,
                 "developer_output": dev_output,
                 "qa_report": qa_report,
