@@ -131,12 +131,13 @@ def cv_to_pil(img_bgr):
     return Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
 
 # Initialize controller and state in streamlit session
-if "controller" not in st.session_state:
-    st.session_state.controller = HITLSDLCController()
-if "state" not in st.session_state:
-    st.session_state.state = st.session_state.controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
+# Ensure controller is always fresh with all methods loaded
+controller = HITLSDLCController()
+st.session_state.controller = controller
 
-controller = st.session_state.controller
+if "state" not in st.session_state:
+    st.session_state.state = controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
+
 state = st.session_state.state
 
 def reset_pipeline():
