@@ -63,8 +63,9 @@ st.markdown("""
         color: #fbbf24 !important;
         border-radius: 8px !important;
         font-weight: 700 !important;
-        font-size: 14px !important;
-        padding: 8px 16px !important;
+        font-size: 13px !important;
+        padding: 8px 6px !important;
+        white-space: nowrap !important;
         box-shadow: 0 0 10px rgba(245, 158, 11, 0.2) !important;
         transition: all 0.2s ease-in-out !important;
     }
@@ -76,7 +77,8 @@ st.markdown("""
     div[data-testid="stButton"] > button div {
         color: #fbbf24 !important;
         font-weight: 700 !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
     }
 
     /* Approve Column (Col 1) Hover & Active: GREEN */
@@ -128,49 +130,46 @@ def cv_to_pil(img_bgr):
         return None
     return Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
 
+# Initialize controller and state in streamlit session
+if "controller" not in st.session_state:
+    st.session_state.controller = HITLSDLCController()
+if "state" not in st.session_state:
+    st.session_state.state = st.session_state.controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
+
+controller = st.session_state.controller
+state = st.session_state.state
+
+def reset_pipeline():
+    """
+    Completely purges all session approvals, notes, and states,
+    ensuring a 100% clean reset to Stage 1.
+    """
+    for key in list(st.session_state.keys()):
+        if key != "controller":
+            del st.session_state[key]
+    st.session_state.state = controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
+
 def render_human_approval_gate(controller, state, stage_or_task_name, prompt_text, key_prefix):
     """
     Renders standardized Human-in-the-Loop Approval Gate:
     - Default state: Both Approve & Reject buttons have crisp AMBER text and border.
-    - On Approve click: Transitions to GREEN.
-    - On Reject click: Transitions to RED and displays revision banner.
-    - Replaces low-contrast alerts with high-contrast styled cards.
+    - Active stage is always ready for human approval (no stuck old approved banners).
+    - If rejected: displays red status and styles reject button in red.
+    - Buttons are properly sized to prevent text truncation (APP... / REJE...).
     """
     st.markdown("### 👤 Human Approval Gate")
     
-    is_rejected = (state.get("stage_status") == "REJECTED")
-    last_action = st.session_state.get(f"last_action_{key_prefix}", None)
+    current_status = state.get("stage_status", "WAITING_FOR_HUMAN")
+    is_rejected = (current_status == "REJECTED")
     
     if is_rejected:
         st.markdown("""
         <div style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #ef4444; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;">
             <div style="color: #f87171; font-weight: 700; font-size: 13px;">🔴 STATUS: REJECTED (CHANGES REQUESTED)</div>
-            <div style="color: #fca5a5; font-size: 12px; margin-top: 4px;">Stage held in paused state. Update reviewer notes or click APPROVE when ready.</div>
+            <div style="color: #fca5a5; font-size: 12px; margin-top: 4px;">Stage held in paused state. Update reviewer notes or click APPROVE when ready to proceed.</div>
         </div>
         """, unsafe_allow_html=True)
-    elif last_action == "APPROVED":
-        st.markdown("""
-        <div style="background: rgba(34, 197, 94, 0.15); border: 1.5px solid #22c55e; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;">
-            <div style="color: #4ade80; font-weight: 700; font-size: 13px;">🟢 STATUS: APPROVED</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Prompt Card with high-contrast Amber styling (No blue/dark contrast issues)
-    st.markdown(f"""
-    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
-        <div style="color: #fbbf24; font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ HUMAN REVIEW REQUIRED</div>
-        <div style="color: #fef3c7; font-size: 13px; line-height: 1.4;">{prompt_text}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{key_prefix}")
-    
-    # Conditional button text and icons
-    app_label = "🟢 APPROVED" if last_action == "APPROVED" else "🟡 APPROVE"
-    rej_label = "🔴 REJECTED" if is_rejected else "🟡 REJECT"
-    
-    # Injected dynamic CSS when in rejected or approved state
-    if is_rejected:
+        # Injected dynamic CSS when in rejected state
         st.markdown("""
         <style>
         div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button {
@@ -183,40 +182,27 @@ def render_human_approval_gate(controller, state, stage_or_task_name, prompt_tex
         }
         </style>
         """, unsafe_allow_html=True)
-    elif last_action == "APPROVED":
-        st.markdown("""
-        <style>
-        div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button {
-            background-color: rgba(34, 197, 94, 0.25) !important;
-            border-color: #22c55e !important;
-            color: #4ade80 !important;
-        }
-        div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button p {
-            color: #4ade80 !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
 
-    c_app, c_rej = st.columns(2)
+    # Prompt Card with high-contrast Amber styling (No blue/dark contrast issues)
+    st.markdown(f"""
+    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+        <div style="color: #fbbf24; font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ HUMAN REVIEW REQUIRED</div>
+        <div style="color: #fef3c7; font-size: 13px; line-height: 1.4;">{prompt_text}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{key_prefix}")
+    
+    c_app, c_rej = st.columns(2, gap="small")
     with c_app:
-        if st.button(app_label, use_container_width=True, key=f"btn_app_{key_prefix}"):
-            st.session_state[f"last_action_{key_prefix}"] = "APPROVED"
+        if st.button("🟡 APPROVE", use_container_width=True, key=f"btn_app_{key_prefix}"):
             st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=feedback or f"Approved {stage_or_task_name}")
             st.rerun()
     with c_rej:
+        rej_label = "🔴 REJECTED" if is_rejected else "🟡 REJECT"
         if st.button(rej_label, use_container_width=True, key=f"btn_rej_{key_prefix}"):
-            st.session_state[f"last_action_{key_prefix}"] = "REJECTED"
             st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
             st.rerun()
-
-# Initialize controller and state in streamlit session
-if "controller" not in st.session_state:
-    st.session_state.controller = HITLSDLCController()
-if "state" not in st.session_state:
-    st.session_state.state = st.session_state.controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
-
-controller = st.session_state.controller
-state = st.session_state.state
 
 # Header
 st.markdown("""
@@ -300,7 +286,7 @@ if state.get("is_completed"):
 
     with col_b:
         if st.button("🔄 Reset & Re-Run Pipeline from Stage 1", use_container_width=True):
-            st.session_state.state = controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
+            reset_pipeline()
             st.rerun()
 
 else:
@@ -315,7 +301,7 @@ else:
             state["stages_data"]["2_SYSTEM_ARCHITECT"] = controller.architect_agent.run(state["stages_data"].get("1_PM_COORDINATOR", {}))
             view = controller.get_current_stage_view(state)
 
-        content_col, action_col = st.columns([3, 1])
+        content_col, action_col = st.columns([2.0, 1.2])
         with content_col:
             st.markdown("#### 🏗️ Stage 2: System Architect Agent")
             st.markdown("##### 📄 System Architecture Blueprint for Face Detection")
@@ -364,9 +350,95 @@ else:
                 stage_name
             )
 
-    # Display Stage Content for other stages
-    elif stage_name in ["1_PM_COORDINATOR", "3_TECH_LEAD", "5_CODE_REVIEWER", "7_WATCHDOG_DEPLOY"]:
-        content_col, action_col = st.columns([3, 1])
+    # Stage 3: Dedicated Tech Lead 5-Task Roadmap Display
+    elif stage_name == "3_TECH_LEAD":
+        content_col, action_col = st.columns([2.0, 1.2])
+        data = view.get("data", {})
+        
+        with content_col:
+            st.markdown("#### 🛠️ Stage 3: Tech Lead Agent")
+            st.markdown("##### 📋 5-Task Algorithmic Development Roadmap")
+            
+            st.markdown("""
+            <div style="background: rgba(31, 41, 55, 0.7); border: 1px solid #374151; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px 18px; margin: 12px 0 16px 0;">
+                <div style="color: #fbbf24; font-weight: 700; font-size: 13px; margin-bottom: 4px; letter-spacing: 0.5px;">
+                    🎯 TECH LEAD DEVELOPMENT ROADMAP
+                </div>
+                <div style="color: #f3f4f6; font-size: 14px; line-height: 1.5;">
+                    The Tech Lead breaks down the architecture blueprint into <b>5 concrete tasks for developers</b>. 
+                    Each task defines the exact worker file being developed, its deliverables, and the rigorous test acceptance criteria.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("### ⚙️ Calibration Standards & Thresholds:")
+            c_cal1, c_cal2, c_cal3, c_cal4 = st.columns(4)
+            with c_cal1:
+                st.markdown("""
+                <div style="background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 12px 8px; text-align: center;">
+                    <div style="color: #9ca3af; font-size: 11px; font-weight: bold;">SHARPNESS CUTOFF</div>
+                    <div style="color: #fbbf24; font-size: 18px; font-weight: bold; margin: 4px 0;">50.0</div>
+                    <div style="color: #6b7280; font-size: 10px;">Laplacian blur score</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with c_cal2:
+                st.markdown("""
+                <div style="background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 12px 8px; text-align: center;">
+                    <div style="color: #9ca3af; font-size: 11px; font-weight: bold;">AI CONFIDENCE</div>
+                    <div style="color: #34d399; font-size: 18px; font-weight: bold; margin: 4px 0;">55%</div>
+                    <div style="color: #6b7280; font-size: 10px;">Min YuNet threshold</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with c_cal3:
+                st.markdown("""
+                <div style="background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 12px 8px; text-align: center;">
+                    <div style="color: #9ca3af; font-size: 11px; font-weight: bold;">CONTRAST BOOST</div>
+                    <div style="color: #60a5fa; font-size: 18px; font-weight: bold; margin: 4px 0;">3.5x</div>
+                    <div style="color: #6b7280; font-size: 10px;">CLAHE clip limit</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with c_cal4:
+                st.markdown("""
+                <div style="background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 12px 8px; text-align: center;">
+                    <div style="color: #9ca3af; font-size: 11px; font-weight: bold;">SPEED BUDGET</div>
+                    <div style="color: #c084fc; font-size: 18px; font-weight: bold; margin: 4px 0;">150 ms</div>
+                    <div style="color: #6b7280; font-size: 10px;">Max latency / photo</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<br>### 📝 The 5 Algorithmic Tasks for Developers:", unsafe_allow_html=True)
+            
+            task_icons = {1: "📸", 2: "💡", 3: "🧠", 4: "📐", 5: "🔄"}
+            for t in data.get("tasks", []):
+                t_id = t.get("task_id", 0)
+                icon = task_icons.get(t_id, "📌")
+                st.markdown(f"""
+                <div style="background: #111827; border: 1px solid #374151; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                        <span style="color: #fbbf24; font-weight: bold; font-size: 15px;">{icon} {t.get('title')}</span>
+                        <span style="background: #1f2937; color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; border: 1px solid #374151;">📁 {t.get('target_worker')}</span>
+                    </div>
+                    <div style="margin-top: 6px; font-size: 13px; color: #f3f4f6; line-height: 1.4;">
+                        <b style="color: #fbbf24;">📦 Deliverable:</b> {t.get('deliverables')}
+                    </div>
+                    <div style="margin-top: 6px; font-size: 13px; color: #a7f3d0; line-height: 1.4;">
+                        <b style="color: #34d399;">✅ Acceptance Criteria:</b> {t.get('acceptance_criteria')}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        with action_col:
+            render_human_approval_gate(
+                controller,
+                state,
+                "5-Task Development Roadmap",
+                view["prompt"],
+                stage_name
+            )
+
+    # Display Stage Content for other stages (1_PM_COORDINATOR, 5_CODE_REVIEWER, 7_WATCHDOG_DEPLOY)
+    elif stage_name in ["1_PM_COORDINATOR", "5_CODE_REVIEWER", "7_WATCHDOG_DEPLOY"]:
+        content_col, action_col = st.columns([2.0, 1.2])
         
         with content_col:
             data = view.get("data", {})
@@ -377,7 +449,10 @@ else:
                 if isinstance(v, list):
                     st.markdown(f"**{k.replace('_', ' ').title()}:**")
                     for item in v:
-                        st.markdown(f"- {item}")
+                        if isinstance(item, dict):
+                            st.markdown(f"- **{item.get('title', 'Item')}:** {item.get('deliverables', str(item))}")
+                        else:
+                            st.markdown(f"- {item}")
                 elif isinstance(v, dict):
                     st.markdown(f"**{k.replace('_', ' ').title()}:**")
                     for sk, sv in v.items():
@@ -522,5 +597,5 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🛠️ Controls")
     if st.button("🔄 Reset to Stage 1 (Fresh Start)", use_container_width=True):
-        st.session_state.state = controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
+        reset_pipeline()
         st.rerun()
