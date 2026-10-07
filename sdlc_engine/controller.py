@@ -47,11 +47,14 @@ class HITLSDLCController:
                 "prompt": "Do you approve the Functional Requirements and Accuracy Specifications?"
             }
         elif current_stage == "2_SYSTEM_ARCHITECT":
+            # Refresh with latest clean template if needed
+            if "the_3_simple_steps" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
+                state["stages_data"]["2_SYSTEM_ARCHITECT"] = self.architect_agent.run(state["stages_data"].get("1_PM_COORDINATOR", {}))
             return {
                 "stage": "2_SYSTEM_ARCHITECT",
-                "title": "Stage 2: System Architect (Architecture Blueprint)",
+                "title": "Stage 2: Software Blueprint (How the System Works)",
                 "data": state["stages_data"].get("2_SYSTEM_ARCHITECT"),
-                "prompt": "Do you approve the Dual-Tier System Architecture and Data Contracts?"
+                "prompt": "Do you approve this 3-step plan to open photos, fix lighting, and detect faces?"
             }
         elif current_stage == "3_TECH_LEAD":
             return {
