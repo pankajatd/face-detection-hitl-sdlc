@@ -157,8 +157,8 @@ else:
 
     st.markdown(f"### 📍 Active Stage: {view['title']}")
 
-    # Ensure Stage 2 is refreshed with plain English text if running
-    if stage_name == "2_SYSTEM_ARCHITECT" and "the_3_simple_steps" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
+    # Ensure Stage 2 is refreshed with plain English text and full agent details if running
+    if stage_name == "2_SYSTEM_ARCHITECT" and "responsible_agent" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
         state["stages_data"]["2_SYSTEM_ARCHITECT"] = controller.architect_agent.run(state["stages_data"].get("1_PM_COORDINATOR", {}))
         view = controller.get_current_stage_view(state)
 

@@ -48,13 +48,13 @@ class HITLSDLCController:
             }
         elif current_stage == "2_SYSTEM_ARCHITECT":
             # Refresh with latest clean template if needed
-            if "the_3_simple_steps" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
+            if "responsible_agent" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
                 state["stages_data"]["2_SYSTEM_ARCHITECT"] = self.architect_agent.run(state["stages_data"].get("1_PM_COORDINATOR", {}))
             return {
                 "stage": "2_SYSTEM_ARCHITECT",
-                "title": "Stage 2: Software Blueprint (How the System Works)",
+                "title": "Stage 2: System Architect Agent (Blueprint & Team Plan)",
                 "data": state["stages_data"].get("2_SYSTEM_ARCHITECT"),
-                "prompt": "Do you approve this 3-step plan to open photos, fix lighting, and detect faces?"
+                "prompt": "Do you approve the System Architect Agent's team organization and 3-step face detection plan?"
             }
         elif current_stage == "3_TECH_LEAD":
             return {
