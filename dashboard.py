@@ -157,13 +157,58 @@ else:
 
     st.markdown(f"### 📍 Active Stage: {view['title']}")
 
-    # Ensure Stage 2 is refreshed with the clean, professional architecture design
-    if stage_name == "2_SYSTEM_ARCHITECT" and "system_components" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
-        state["stages_data"]["2_SYSTEM_ARCHITECT"] = controller.architect_agent.run(state["stages_data"].get("1_PM_COORDINATOR", {}))
-        view = controller.get_current_stage_view(state)
+    # Force refresh Stage 2 if old keys exist in memory
+    if stage_name == "2_SYSTEM_ARCHITECT":
+        if "tier_1_governance" in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}) or "system_components" not in state["stages_data"].get("2_SYSTEM_ARCHITECT", {}):
+            state["stages_data"]["2_SYSTEM_ARCHITECT"] = controller.architect_agent.run(state["stages_data"].get("1_PM_COORDINATOR", {}))
+            view = controller.get_current_stage_view(state)
 
-    # Display Stage Content
-    if stage_name in ["1_PM_COORDINATOR", "2_SYSTEM_ARCHITECT", "3_TECH_LEAD", "5_CODE_REVIEWER", "7_WATCHDOG_DEPLOY"]:
+        content_col, action_col = st.columns([3, 1])
+        with content_col:
+            st.markdown("#### 🏗️ Stage 2: System Architect Agent")
+            st.markdown("##### 📄 System Architecture Blueprint for Face Detection")
+            st.info("The System Architect Agent designs the 4 core components that process photos from ingestion to face detection:")
+            
+            st.markdown("### 🧩 The 4 System Components:")
+            st.markdown("""
+            * **1. 📸 Image Ingestion Module:**
+              Opens digital photos (JPG, PNG, WebP) and verifies color buffers.
+            * **2. 💡 Image Enhancement Module:**
+              Pre-processes low-light or blurry photos using adaptive contrast (CLAHE).
+            * **3. 🧠 AI Detection Core:**
+              Executes OpenCV YuNet Deep Neural Network to locate faces and 5 facial points.
+            * **4. 🎯 Quality & Output Module:**
+              Draws green bounding boxes, measures clarity, and outputs confidence scores.
+            """)
+            
+            st.markdown("### 🔄 Data Flow Pipeline:")
+            st.code("Input Photo  -->  Image Enhancement  -->  YuNet AI Detector  -->  Annotated Face Output", language="text")
+            
+            st.markdown("### 🎯 Technical Specifications:")
+            st.markdown("""
+            * **AI Detection Model:** OpenCV YuNet Deep Neural Network (ONNX)
+            * **Target Speed:** Under 150 milliseconds per photo
+            * **Target Accuracy:** Greater than 95% precision
+            * **Output:** Green bounding box coordinates [x, y, width, height], confidence score, and 5 facial points
+            """)
+
+        with action_col:
+            st.markdown("### 👤 Human Approval Gate")
+            st.warning("**Do you approve the System Architect Agent's 4-component design and data flow for the Face Detection engine?**")
+            feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{stage_name}")
+            
+            c_app, c_rej = st.columns(2)
+            with c_app:
+                if st.button("🟢 APPROVE", type="primary", use_container_width=True, key=f"btn_app_{stage_name}"):
+                    st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=feedback or "Approved by Human Lead")
+                    st.rerun()
+            with c_rej:
+                if st.button("🔴 REJECT", use_container_width=True, key=f"btn_rej_{stage_name}"):
+                    st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
+                    st.rerun()
+
+    # Display Stage Content for other stages
+    elif stage_name in ["1_PM_COORDINATOR", "3_TECH_LEAD", "5_CODE_REVIEWER", "7_WATCHDOG_DEPLOY"]:
         content_col, action_col = st.columns([3, 1])
         
         with content_col:
