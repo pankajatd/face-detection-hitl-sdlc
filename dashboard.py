@@ -45,12 +45,76 @@ st.markdown("""
     .badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
     .badge-yellow { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid #eab308; }
     .badge-purple { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid #a855f7; }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
     .report-card {
         background: #111827;
         border-radius: 10px;
         padding: 16px;
         border: 1px solid #374151;
         font-family: monospace;
+    }
+
+    /* ALL BUTTONS BASE: Amber Text, Amber Border, Dark Background */
+    button[data-testid="baseButton-secondary"],
+    button[data-testid="baseButton-primary"],
+    div[data-testid="stButton"] > button {
+        background-color: #111827 !important;
+        border: 2px solid #f59e0b !important;
+        color: #fbbf24 !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        padding: 8px 16px !important;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.2) !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    button[data-testid="baseButton-secondary"] p,
+    button[data-testid="baseButton-primary"] p,
+    div[data-testid="stButton"] > button p,
+    div[data-testid="stButton"] > button span,
+    div[data-testid="stButton"] > button div {
+        color: #fbbf24 !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+    }
+
+    /* Approve Column (Col 1) Hover & Active: GREEN */
+    div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button:hover,
+    div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button:active {
+        background-color: rgba(34, 197, 94, 0.2) !important;
+        border-color: #22c55e !important;
+        color: #4ade80 !important;
+        box-shadow: 0 0 16px rgba(34, 197, 94, 0.5) !important;
+    }
+    div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button:hover p,
+    div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button:active p {
+        color: #4ade80 !important;
+    }
+
+    /* Reject Column (Col 2) Hover & Active: RED */
+    div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button:hover,
+    div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button:active {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        border-color: #ef4444 !important;
+        color: #f87171 !important;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.5) !important;
+    }
+    div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button:hover p,
+    div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button:active p {
+        color: #f87171 !important;
+    }
+
+    /* High contrast text inputs */
+    div[data-testid="stTextInput"] input {
+        background-color: #111827 !important;
+        color: #f3f4f6 !important;
+        border: 1px solid #374151 !important;
+        border-radius: 6px !important;
+    }
+    div[data-testid="stTextInput"] input:focus {
+        border-color: #f59e0b !important;
+        box-shadow: 0 0 8px rgba(245, 158, 11, 0.3) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -63,6 +127,87 @@ def cv_to_pil(img_bgr):
     if img_bgr is None:
         return None
     return Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
+
+def render_human_approval_gate(controller, state, stage_or_task_name, prompt_text, key_prefix):
+    """
+    Renders standardized Human-in-the-Loop Approval Gate:
+    - Default state: Both Approve & Reject buttons have crisp AMBER text and border.
+    - On Approve click: Transitions to GREEN.
+    - On Reject click: Transitions to RED and displays revision banner.
+    - Replaces low-contrast alerts with high-contrast styled cards.
+    """
+    st.markdown("### 👤 Human Approval Gate")
+    
+    is_rejected = (state.get("stage_status") == "REJECTED")
+    last_action = st.session_state.get(f"last_action_{key_prefix}", None)
+    
+    if is_rejected:
+        st.markdown("""
+        <div style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #ef4444; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;">
+            <div style="color: #f87171; font-weight: 700; font-size: 13px;">🔴 STATUS: REJECTED (CHANGES REQUESTED)</div>
+            <div style="color: #fca5a5; font-size: 12px; margin-top: 4px;">Stage held in paused state. Update reviewer notes or click APPROVE when ready.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    elif last_action == "APPROVED":
+        st.markdown("""
+        <div style="background: rgba(34, 197, 94, 0.15); border: 1.5px solid #22c55e; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;">
+            <div style="color: #4ade80; font-weight: 700; font-size: 13px;">🟢 STATUS: APPROVED</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Prompt Card with high-contrast Amber styling (No blue/dark contrast issues)
+    st.markdown(f"""
+    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+        <div style="color: #fbbf24; font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ HUMAN REVIEW REQUIRED</div>
+        <div style="color: #fef3c7; font-size: 13px; line-height: 1.4;">{prompt_text}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{key_prefix}")
+    
+    # Conditional button text and icons
+    app_label = "🟢 APPROVED" if last_action == "APPROVED" else "🟡 APPROVE"
+    rej_label = "🔴 REJECTED" if is_rejected else "🟡 REJECT"
+    
+    # Injected dynamic CSS when in rejected or approved state
+    if is_rejected:
+        st.markdown("""
+        <style>
+        div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button {
+            background-color: rgba(239, 68, 68, 0.25) !important;
+            border-color: #ef4444 !important;
+            color: #f87171 !important;
+        }
+        div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button p {
+            color: #f87171 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    elif last_action == "APPROVED":
+        st.markdown("""
+        <style>
+        div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button {
+            background-color: rgba(34, 197, 94, 0.25) !important;
+            border-color: #22c55e !important;
+            color: #4ade80 !important;
+        }
+        div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button p {
+            color: #4ade80 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    c_app, c_rej = st.columns(2)
+    with c_app:
+        if st.button(app_label, use_container_width=True, key=f"btn_app_{key_prefix}"):
+            st.session_state[f"last_action_{key_prefix}"] = "APPROVED"
+            st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=feedback or f"Approved {stage_or_task_name}")
+            st.rerun()
+    with c_rej:
+        if st.button(rej_label, use_container_width=True, key=f"btn_rej_{key_prefix}"):
+            st.session_state[f"last_action_{key_prefix}"] = "REJECTED"
+            st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
+            st.rerun()
 
 # Initialize controller and state in streamlit session
 if "controller" not in st.session_state:
@@ -143,11 +288,18 @@ if state.get("is_completed"):
     with col_a:
         st.markdown("### 🏆 Master QA Regression Certificate")
         cert = state["stages_data"].get("6_QA_REGRESSION", {})
-        st.info(f"**Pass Rate:** {cert.get('pass_rate_pct')}% ({cert.get('total_passed')}/{cert.get('total_test_cases')} Tests Passed) | **Duration:** {cert.get('execution_duration_sec')}s")
+        st.markdown(f"""
+        <div style="background: rgba(31, 41, 55, 0.7); border: 1px solid #374151; border-left: 4px solid #10b981; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
+            <div style="color: #34d399; font-weight: 700; font-size: 14px;">PASSED ALL REGRESSION SUITES</div>
+            <div style="color: #f3f4f6; font-size: 13px; margin-top: 4px;">
+                Pass Rate: <b>{cert.get('pass_rate_pct')}%</b> ({cert.get('total_passed')}/{cert.get('total_test_cases')} Tests Passed) | Duration: {cert.get('execution_duration_sec')}s
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         st.write(cert.get("qa_signoff"))
 
     with col_b:
-        if st.button("🔄 Reset & Re-Run Pipeline from Stage 1", type="primary", use_container_width=True):
+        if st.button("🔄 Reset & Re-Run Pipeline from Stage 1", use_container_width=True):
             st.session_state.state = controller.initialize_pipeline("Face Detection Multi-Agent Vision Platform")
             st.rerun()
 
@@ -167,7 +319,18 @@ else:
         with content_col:
             st.markdown("#### 🏗️ Stage 2: System Architect Agent")
             st.markdown("##### 📄 System Architecture Blueprint for Face Detection")
-            st.info("The System Architect Agent designs the 4 core components that process photos from ingestion to face detection:")
+            
+            # High-contrast card (NO unreadable dark-blue text)
+            st.markdown("""
+            <div style="background: rgba(31, 41, 55, 0.7); border: 1px solid #374151; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px 18px; margin: 12px 0 16px 0;">
+                <div style="color: #fbbf24; font-weight: 700; font-size: 13px; margin-bottom: 4px; letter-spacing: 0.5px;">
+                    🏛️ ARCHITECTURAL BLUEPRINT OVERVIEW
+                </div>
+                <div style="color: #f3f4f6; font-size: 14px; line-height: 1.5;">
+                    The System Architect Agent designs the 4 core components that process photos from ingestion to face detection:
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
             st.markdown("### 🧩 The 4 System Components:")
             st.markdown("""
@@ -193,19 +356,13 @@ else:
             """)
 
         with action_col:
-            st.markdown("### 👤 Human Approval Gate")
-            st.warning("**Do you approve the System Architect Agent's 4-component design and data flow for the Face Detection engine?**")
-            feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{stage_name}")
-            
-            c_app, c_rej = st.columns(2)
-            with c_app:
-                if st.button("🟢 APPROVE", type="primary", use_container_width=True, key=f"btn_app_{stage_name}"):
-                    st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=feedback or "Approved by Human Lead")
-                    st.rerun()
-            with c_rej:
-                if st.button("🔴 REJECT", use_container_width=True, key=f"btn_rej_{stage_name}"):
-                    st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
-                    st.rerun()
+            render_human_approval_gate(
+                controller,
+                state,
+                "System Architect Blueprint",
+                "Do you approve the System Architect Agent's 4-component design and data flow for the Face Detection engine?",
+                stage_name
+            )
 
     # Display Stage Content for other stages
     elif stage_name in ["1_PM_COORDINATOR", "3_TECH_LEAD", "5_CODE_REVIEWER", "7_WATCHDOG_DEPLOY"]:
@@ -229,19 +386,13 @@ else:
                     st.markdown(f"**{k.replace('_', ' ').title()}:** {v}")
 
         with action_col:
-            st.markdown("### 👤 Human Approval Gate")
-            st.warning(f"**{view['prompt']}**")
-            feedback = st.text_input("Reviewer Notes (Optional):", key=f"fb_{stage_name}")
-            
-            c_app, c_rej = st.columns(2)
-            with c_app:
-                if st.button("🟢 APPROVE", type="primary", use_container_width=True, key=f"btn_app_{stage_name}"):
-                    st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=feedback or "Approved by Human Lead")
-                    st.rerun()
-            with c_rej:
-                if st.button("🔴 REJECT", use_container_width=True, key=f"btn_rej_{stage_name}"):
-                    st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=feedback or "Needs revision")
-                    st.rerun()
+            render_human_approval_gate(
+                controller,
+                state,
+                view["title"],
+                view["prompt"],
+                stage_name
+            )
 
     elif stage_name == "4_DEVELOPER_TASKS":
         task_id = view["task_id"]
@@ -316,22 +467,13 @@ else:
         st.markdown("<hr style='border: 0.5px solid #1f2937; margin: 12px 0;'>", unsafe_allow_html=True)
         
         # Human Action Gate for Task
-        st.markdown("### 👤 Human Approval Gate for Task")
-        g_c1, g_c2 = st.columns([3, 1])
-        with g_c1:
-            st.warning(f"**{view['prompt']}**")
-            fb_task = st.text_input("Reviewer Notes for Task:", key=f"fb_task_{task_id}")
-        with g_c2:
-            st.markdown("<br>", unsafe_allow_html=True)
-            b1, b2 = st.columns(2)
-            with b1:
-                if st.button(f"🟢 APPROVE TASK {task_id}", type="primary", use_container_width=True, key=f"btn_app_task_{task_id}"):
-                    st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=fb_task or f"Approved Task {task_id}")
-                    st.rerun()
-            with b2:
-                if st.button("🔴 REJECT", use_container_width=True, key=f"btn_rej_task_{task_id}"):
-                    st.session_state.state = controller.submit_human_decision(state, "REJECTED", feedback=fb_task or "Needs fix")
-                    st.rerun()
+        render_human_approval_gate(
+            controller,
+            state,
+            f"Developer Task {task_id}: {task_def.get('name')}",
+            view["prompt"],
+            f"task_{task_id}"
+        )
 
     elif stage_name == "6_QA_REGRESSION":
         cert = view.get("data", {})
@@ -343,22 +485,28 @@ else:
             
             for tb in cert.get("task_breakdown", []):
                 st.markdown(f"- **Task {tb['task_id']} ({tb['task_name']}):** Score: `{tb['score']}` | Status: `{tb['verdict']}`")
-            st.info(cert.get("qa_signoff"))
+            
+            st.markdown(f"""
+            <div style="background: rgba(31, 41, 55, 0.7); border: 1px solid #374151; border-left: 4px solid #10b981; border-radius: 8px; padding: 12px 16px; margin-top: 12px;">
+                <span style="color: #34d399; font-weight: 700;">QA Lead Sign-Off:</span> <span style="color: #f3f4f6;">{cert.get('qa_signoff')}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
         with c_right:
-            st.markdown("### 👤 Human Gate")
-            st.warning(f"**{view['prompt']}**")
-            fb_qa = st.text_input("Certification Notes:", key="fb_reg")
-            if st.button("🟢 APPROVE QA CERTIFICATION", type="primary", use_container_width=True):
-                st.session_state.state = controller.submit_human_decision(state, "APPROVED", feedback=fb_qa or "Approved QA Certification")
-                st.rerun()
+            render_human_approval_gate(
+                controller,
+                state,
+                "Master QA Regression Certification",
+                view["prompt"],
+                "stage_6_qa"
+            )
 
 # Sidebar: Human Audit Trail & Execution Logs
 with st.sidebar:
     st.markdown("### 📜 Human Audit Trail")
     trail = state.get("human_audit_trail", [])
     if not trail:
-        st.info("No approval events recorded yet.")
+        st.markdown("<div style='color: #9ca3af; font-size: 13px; font-style: italic;'>No approval events recorded yet.</div>", unsafe_allow_html=True)
     else:
         for t in reversed(trail):
             color = "badge-green" if t["decision"] == "APPROVED" else "badge-red"
