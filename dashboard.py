@@ -749,8 +749,25 @@ else:
             """, unsafe_allow_html=True)
             
             st.markdown("### 🧩 Functional Requirements (FR):")
+            has_revised_req = bool(
+                data.get("previous_requirement") 
+                or state.get("just_remedied") 
+                or any("Elaborated" in str(fr) for fr in data.get("functional_requirements", []))
+                or "FR-05" in str(state.get("remedy_message", ""))
+            )
             for fr in data.get("functional_requirements", []):
-                st.markdown(f"- **{fr}**")
+                if "FR-05" in fr and has_revised_req:
+                    clean_fr = fr.replace("FR-05 (Elaborated): ", "").replace("FR-05: ", "")
+                    st.markdown(f"""
+                    <div style="background: rgba(34, 197, 94, 0.12); border: 1.5px solid #22c55e; border-left: 5px solid #22c55e; border-radius: 8px; padding: 10px 14px; margin: 10px 0;">
+                        <span style="color: #4ade80; font-weight: bold; font-size: 13px;">FR-05 (UPDATED & ELABORATED ✨):</span>
+                        <div style="color: #f3f4f6; font-size: 13px; line-height: 1.4; margin-top: 4px;">
+                            {clean_fr}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"- **{fr}**")
                 
             st.markdown("### ⚡ Non-Functional Requirements (NFR & Performance):")
             for nfr in data.get("non_functional_requirements", []):
@@ -761,6 +778,37 @@ else:
                 st.markdown(f"- ✅ {ac}")
 
         with action_col:
+            # Show Specification Diff Card on the Right Side
+            if has_revised_req:
+                prev_content = data.get(
+                    "previous_requirement", 
+                    "FR-05: Execute closed-loop self-healing on degraded frames in <25 milliseconds."
+                )
+                curr_content = data.get(
+                    "updated_requirement", 
+                    "FR-05 (Elaborated): Autonomous Multi-Stage Self-Healing Engine — When incoming frames exhibit optical degradation (heavy shadows, blur, or washout), routes through adaptive Lab CLAHE contrast enhancement and unsharp edge sharpening filters within <25ms, restoring facial visibility without human intervention."
+                )
+                st.markdown(f"""
+                <div style="background: rgba(31, 41, 55, 0.85); border: 1.5px solid #3b82f6; border-left: 5px solid #3b82f6; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <div style="color: #60a5fa; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span>🔍 SPECIFICATION DIFF: FR-05</span>
+                        <span style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">REVISED BY PM</span>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid #ef4444; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px;">
+                        <div style="color: #f87171; font-size: 11px; font-weight: bold;">⏮️ PREVIOUS REQUIREMENT (BEFORE REVISION):</div>
+                        <div style="color: #fca5a5; font-size: 12px; margin-top: 3px; line-height: 1.4; text-decoration: line-through;">
+                            {prev_content}
+                        </div>
+                    </div>
+                    <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: 6px; padding: 8px 10px;">
+                        <div style="color: #4ade80; font-size: 11px; font-weight: bold;">⏭️ CURRENT ELABORATED (UPDATED):</div>
+                        <div style="color: #a7f3d0; font-size: 12px; margin-top: 3px; line-height: 1.4;">
+                            {curr_content}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
             render_human_approval_gate(
                 controller,
                 state,

@@ -228,12 +228,8 @@ class HITLSDLCController:
         agent_name = "SDLC Agent"
         if current_stage == "1_PM_COORDINATOR":
             spec = state["stages_data"].get("1_PM_COORDINATOR", {})
-            spec["revised_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            spec["revisions_applied"] = [
-                f"Updated functional specifications per reviewer notes: '{feedback}'",
-                "Added strict latency and edge device constraint safeguards"
-            ]
-            state["stages_data"]["1_PM_COORDINATOR"] = spec
+            revised_spec = self.pm_agent.revise(spec, feedback)
+            state["stages_data"]["1_PM_COORDINATOR"] = revised_spec
             agent_name = "Product Manager Coordinator Agent"
 
         elif current_stage == "2_SYSTEM_ARCHITECT":
