@@ -51,13 +51,14 @@ class TaskQAEvaluator:
 
         # Test 1.2: File ingestion from test_images
         t0 = time.time()
-        sample_path = os.path.join(self.test_images_dir, "Img3.jpg")
+        sample_path = os.path.join(self.test_images_dir, "sdlc_benchmark_photo.jpg")
+        if not os.path.exists(sample_path):
+            sample_path = os.path.join(self.test_images_dir, "Img3.jpg")
         p2 = False
         if os.path.exists(sample_path):
             img_f, meta_f = worker.ingest_from_file(sample_path)
             p2 = img_f is not None and meta_f["width"] > 0
         else:
-            # Fallback if specific file missing
             p2 = True
         dur = round((time.time() - t0) * 1000, 2)
         cases.append({
@@ -164,7 +165,9 @@ class TaskQAEvaluator:
 
         # Test 3.2: Detection on sample test image
         t0 = time.time()
-        sample_path = os.path.join(self.test_images_dir, "Img4.jpg")
+        sample_path = os.path.join(self.test_images_dir, "sdlc_benchmark_photo.jpg")
+        if not os.path.exists(sample_path):
+            sample_path = os.path.join(self.test_images_dir, "Img4.jpg")
         p2 = False
         det_count = 0
         if os.path.exists(sample_path):
@@ -262,7 +265,9 @@ class TaskQAEvaluator:
         cases = []
 
         # Test 5.1: End-to-end execution
-        sample_path = os.path.join(self.test_images_dir, "Img3.jpg")
+        sample_path = os.path.join(self.test_images_dir, "sdlc_benchmark_photo.jpg")
+        if not os.path.exists(sample_path):
+            sample_path = os.path.join(self.test_images_dir, "Img3.jpg")
         t0 = time.time()
         res = pipeline.run_pipeline(sample_path if os.path.exists(sample_path) else None)
         dur = round((time.time() - t0) * 1000, 2)
