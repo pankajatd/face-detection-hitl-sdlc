@@ -124,8 +124,8 @@ Implemented under `algorithmic_agents/` and verified individually:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/pankajatd/multi-agent-face-detection.git
-cd multi-agent-face-detection
+git clone https://github.com/pankajatd/face-detection-hitl-sdlc.git
+cd face-detection-hitl-sdlc
 ```
 
 ### 2. Create a Virtual Environment & Install Dependencies
@@ -181,7 +181,7 @@ You can deploy this platform to the web for free using **Streamlit Community Clo
 2. **Create New App:**
    * Click the **"New app"** button in the top right.
 3. **Configure Deployment Settings:**
-   * **Repository:** `pankajatd/multi-agent-face-detection`
+   * **Repository:** `pankajatd/face-detection-hitl-sdlc`
    * **Branch:** `main`
    * **Main file path:** `dashboard.py`
 4. **Deploy:**
@@ -218,7 +218,7 @@ tests/test_sdlc_hitl.py::test_hitl_full_approval_cycle PASSED            [100%]
 ## 📂 Repository File Structure
 
 ```text
-multi-agent-face-detection/
+face-detection-hitl-sdlc/
 ├── dashboard.py                   # Full interactive Streamlit Web Approval Dashboard
 ├── run_interactive_sdlc.py        # Terminal CLI Approval Runner
 ├── requirements.txt               # Lightweight runtime dependencies (Streamlit, OpenCV, etc.)
